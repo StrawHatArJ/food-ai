@@ -14,7 +14,7 @@ active_usda_key = usda_key_input if usda_key_input else "DEMO_KEY"
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def fetch_usda_data(query, key):
-    url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={query}&dataType=Branded&pageSize=1&api_key={IuQdhlSX2AbpcVfXcv1Sj244jyTNDBqcq04TP7iW}"
+    url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={query}&dataType=Branded&pageSize=1&api_key=IuQdhlSX2AbpcVfXcv1Sj244jyTNDBqcq04TP7iW"
     response = requests.get(url, timeout=10)
     return response.status_code, response.json() if response.status_code == 200 else {}
 
