@@ -9,33 +9,54 @@ api_key = st.sidebar.text_input("Gemini API Key", type="password", help="Enter y
 if api_key:
     genai.configure(api_key=api_key)
 
+usda_key_input = st.sidebar.text_input("USDA API Key (Optional)", type="password", help="USDA DEMO_KEY is rate limited to 30 requests/hour. Get a free one at fdc.nal.usda.gov to bypass this!")
+active_usda_key = usda_key_input if usda_key_input else "DEMO_KEY"
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def fetch_usda_data(query, key):
+    url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={query}&dataType=Branded&pageSize=1&api_key={IuQdhlSX2AbpcVfXcv1Sj244jyTNDBqcq04TP7iW}"
+    response = requests.get(url, timeout=10)
+    return response.status_code, response.json() if response.status_code == 200 else {}
+
+@st.cache_data(ttl=3600, show_spinner=False)
+def analyze_ingredients_with_ai(ingredients_text, _api_key):
+    # Using _api_key ignores the key string from Streamlit's hashing for caching
+    model = genai.GenerativeModel('gemini-pro')
+    prompt = f"""
+    You are an expert nutritionist and health AI. Analyze the following ingredients for a packaged food item against the World Health Organization (WHO) dietary guidelines.
+    
+    Ingredients: {ingredients_text}
+    
+    Please provide the output EXACTLY as a Markdown table with the following columns:
+    | Ingredient | Purpose | WHO Guideline / Limit | Long-Term Side Effect |
+    
+    Only include ingredients that have notable guidelines (like sugars, sodium, specific preservatives, unhealthy fats), health impacts, or side effects. Consolidate benign ingredients or skip them.
+    Ensure the output is ONLY the markdown table and no other conversational text.
+    """
+    response = model.generate_content(prompt)
+    return response.text
+
 st.title("AI Food Analyzer 🍎")
 st.write("Welcome to your intelligent food analyzer! Enter a packaged food name below to fetch its ingredients.")
 
-food_query = st.text_input("Packaged Food Name", placeholder="e.g., Maggie,KurKure")
+food_query = st.text_input("Packaged Food Name", placeholder="e.g., Nutella, Oreo")
 
 if st.button("Analyze Food"):
     if food_query:
         with st.spinner(f"Searching for **{food_query}** using USDA FoodData Central..."):
             try:
-                # We migrated to USDA FoodData Central API because Open Food Facts was unstable globally
-                url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={food_query}&dataType=Branded&pageSize=1&api_key=IuQdhlSX2AbpcVfXcv1Sj244jyTNDBqcq04TP7iW"
-                response = requests.get(url, timeout=10)
+                status_code, data = fetch_usda_data(food_query, active_usda_key)
                 
-                if response.status_code == 200:
-                    data = response.json()
+                if status_code == 200:
                     foods = data.get("foods", [])
                     if foods and len(foods) > 0:
                         top_product = foods[0]
-                        
-                        # USDA JSON structure uses 'description' and 'ingredients'
                         product_name = top_product.get("description", "Unknown Product")
                         ingredients = top_product.get("ingredients", "")
                         
                         st.success(f"Successfully found data for: **{product_name}**")
                         st.subheader("Ingredients:")
                         if ingredients and ingredients.strip() != "":
-                            # Clean up the string slightly for better readability
                             clean_ingredients = ingredients.replace(", ", " • ")
                             st.info(clean_ingredients)
                             
@@ -45,32 +66,18 @@ if st.button("Analyze Food"):
                             else:
                                 with st.spinner("Analyzing ingredients with Google Gemini AI..."):
                                     try:
-                                        # Use the standard flash model for faster text generation
-                                        model = genai.GenerativeModel('gemini-1.5-flash')
-                                        prompt = f"""
-                                        You are an expert nutritionist and health AI. Analyze the following ingredients for a packaged food item against the World Health Organization (WHO) dietary guidelines.
-                                        
-                                        Ingredients: {ingredients}
-                                        
-                                        Please provide the output EXACTLY as a Markdown table with the following columns:
-                                        | Ingredient | Purpose | WHO Guideline / Limit | Long-Term Side Effect |
-                                        
-                                        Only include ingredients that have notable guidelines (like sugars, sodium, specific preservatives, unhealthy fats), health impacts, or side effects. Consolidate benign ingredients or skip them.
-                                        Ensure the output is ONLY the markdown table and no other conversational text.
-                                        """
-                                        response = model.generate_content(prompt)
-                                        # Display the generated table directly in Streamlit
-                                        st.markdown(response.text)
+                                        table_output = analyze_ingredients_with_ai(clean_ingredients, api_key)
+                                        st.markdown(table_output)
                                     except Exception as e:
                                         st.error(f"Failed to generate AI analysis: {str(e)}")
                         else:
                             st.warning("No specific ingredients list found for this product.")
                     else:
                         st.error(f"Could not find any products matching '{food_query}' in the USDA database. Try a more specific known brand.")
-                elif response.status_code == 429:
-                    st.error("🚨 USDA API Demo Rate Limit Exceeded. Please try again soon.")
+                elif status_code == 429:
+                    st.error("🚨 USDA API Rate Limit Exceeded. If using the default demo key, please enter your own API key in the sidebar.")
                 else:
-                    st.error(f"There was an error connecting to the USDA API (Status Code: {response.status_code}).")
+                    st.error(f"There was an error connecting to the USDA API (Status Code: {status_code}).")
             except Exception as e:
                 st.error(f"Network error occurred: {str(e)}")
     else:
