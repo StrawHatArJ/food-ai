@@ -38,11 +38,14 @@ def analyze_ingredients_with_ai(ingredients_text, _api_key):
     
     Ingredients: {ingredients_text}
     
-    Please provide the output EXACTLY as a Markdown table with the following columns:
+    1. First, provide the output EXACTLY as a Markdown table with the following columns:
     | Ingredient | Purpose | WHO Guideline / Limit | Long-Term Side Effect |
-    
     Only include ingredients that have notable guidelines (like sugars, sodium, specific preservatives, unhealthy fats), health impacts, or side effects. Consolidate benign ingredients or skip them.
-    Ensure the output is ONLY the markdown table and no other conversational text.
+    
+    2. Then, under the table, add a section exactly named "### ⚖️ Daily Intake Recommendation".
+    Based on the ingredients, estimate a safe consumption limit in **grams** per day for this specific food to help the human body stay disease-free in the long term. Explain your reasoning concisely based on the most hazardous ingredients (e.g. sugar, saturated fats, sodium).
+    
+    Ensure the output is ONLY the markdown table followed strictly by the intake recommendation block.
     """
     response = model.generate_content(prompt)
     return response.text
@@ -93,4 +96,3 @@ if st.button("Analyze Food"):
                 st.error(f"Network error occurred: {str(e)}")
     else:
         st.error("Please enter a food name to analyze.")
-
