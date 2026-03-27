@@ -20,8 +20,19 @@ def fetch_usda_data(query, key):
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def analyze_ingredients_with_ai(ingredients_text, _api_key):
-    # Using _api_key ignores the key string from Streamlit's hashing for caching
-    model = genai.GenerativeModel('gemini-pro')
+    # Dynamically find an available model for the user's API key to prevent 404 errors
+    model_name = "gemini-2.5-flash"
+    try:
+        available = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
+        if available:
+            flash_models = [m for m in available if "flash" in m]
+            model_name = flash_models[0] if flash_models else available[0]
+            # Strip "models/" prefix if present, as GenerativeModel sometimes doubles it
+            model_name = model_name.replace("models/", "")
+    except Exception:
+        pass
+        
+    model = genai.GenerativeModel(model_name)
     prompt = f"""
     You are an expert nutritionist and health AI. Analyze the following ingredients for a packaged food item against the World Health Organization (WHO) dietary guidelines.
     
@@ -82,3 +93,4 @@ if st.button("Analyze Food"):
                 st.error(f"Network error occurred: {str(e)}")
     else:
         st.error("Please enter a food name to analyze.")
+
