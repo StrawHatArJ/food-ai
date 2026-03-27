@@ -45,7 +45,10 @@ def analyze_ingredients_with_ai(ingredients_text, _api_key):
     2. Then, under the table, add a section exactly named "### ⚖️ Daily Intake Recommendation".
     Based on the ingredients, estimate a safe consumption limit in **grams** per day for this specific food to help the human body stay disease-free in the long term. Explain your reasoning concisely based on the most hazardous ingredients (e.g. sugar, saturated fats, sodium).
     
-    Ensure the output is ONLY the markdown table followed strictly by the intake recommendation block.
+    3. Finally, add a section exactly named "### 🔄 Healthier Alternatives".
+    Suggest 2-3 specific alternative products or whole food substitutes that serve a similar culinary taste/purpose but are much closer to WHO health guidelines (e.g. less added sugar, fewer preservatives, natural ingredients).
+    
+    Ensure the output is ONLY the markdown table followed strictly by the intake recommendation and the alternatives block.
     """
     response = model.generate_content(prompt)
     return response.text
