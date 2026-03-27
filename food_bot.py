@@ -46,7 +46,7 @@ def analyze_ingredients_with_ai(ingredients_text, _api_key):
     Based on the ingredients, estimate a safe consumption limit in **grams** per day for this specific food to help the human body stay disease-free in the long term. Explain your reasoning concisely based on the most hazardous ingredients (e.g. sugar, saturated fats, sodium).
     
     3. Finally, add a section exactly named "### 🔄 Healthier Alternatives".
-    Suggest 2-3 specific alternative products or whole food substitutes that serve a similar culinary taste/purpose but are much closer to WHO health guidelines (e.g. less added sugar, fewer preservatives, natural ingredients).
+    Suggest 2-3 specific alternative commercial products or whole food substitutes that serve a similar culinary taste/purpose but are less harmful and much closer to WHO health guidelines (e.g. less added sugar, fewer preservatives). Ensure that these suggested commercial products are directly similar in nature to the inputted product.
     
     Ensure the output is ONLY the markdown table followed strictly by the intake recommendation and the alternatives block.
     """
