@@ -12,14 +12,14 @@ if api_key:
 st.title("AI Food Analyzer 🍎")
 st.write("Welcome to your intelligent food analyzer! Enter a packaged food name below to fetch its ingredients.")
 
-food_query = st.text_input("Packaged Food Name", placeholder="e.g., Nutella, Oreo")
+food_query = st.text_input("Packaged Food Name", placeholder="e.g., Maggie,KurKure")
 
 if st.button("Analyze Food"):
     if food_query:
         with st.spinner(f"Searching for **{food_query}** using USDA FoodData Central..."):
             try:
                 # We migrated to USDA FoodData Central API because Open Food Facts was unstable globally
-                url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={food_query}&dataType=Branded&pageSize=1&api_key=DEMO_KEY"
+                url = f"https://api.nal.usda.gov/fdc/v1/foods/search?query={food_query}&dataType=Branded&pageSize=1&api_key=IuQdhlSX2AbpcVfXcv1Sj244jyTNDBqcq04TP7iW"
                 response = requests.get(url, timeout=10)
                 
                 if response.status_code == 200:
