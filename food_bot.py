@@ -1,7 +1,13 @@
 import streamlit as st
 import requests
+import google.generativeai as genai
 
 st.set_page_config(page_title="AI Food Analyzer", page_icon="🍎")
+
+st.sidebar.header("⚙️ Settings")
+api_key = st.sidebar.text_input("Gemini API Key", type="password", help="Enter your free Google Gemini API key to enable WHO AI Analysis.")
+if api_key:
+    genai.configure(api_key=api_key)
 
 st.title("AI Food Analyzer 🍎")
 st.write("Welcome to your intelligent food analyzer! Enter a packaged food name below to fetch its ingredients.")
@@ -32,6 +38,31 @@ if st.button("Analyze Food"):
                             # Clean up the string slightly for better readability
                             clean_ingredients = ingredients.replace(", ", " • ")
                             st.info(clean_ingredients)
+                            
+                            st.subheader("🏥 WHO Guideline Analysis")
+                            if not api_key:
+                                st.warning("Please enter your Gemini API Key in the sidebar to view the AI analysis table.")
+                            else:
+                                with st.spinner("Analyzing ingredients with Google Gemini AI..."):
+                                    try:
+                                        # Use the standard flash model for faster text generation
+                                        model = genai.GenerativeModel('gemini-1.5-flash')
+                                        prompt = f"""
+                                        You are an expert nutritionist and health AI. Analyze the following ingredients for a packaged food item against the World Health Organization (WHO) dietary guidelines.
+                                        
+                                        Ingredients: {ingredients}
+                                        
+                                        Please provide the output EXACTLY as a Markdown table with the following columns:
+                                        | Ingredient | Purpose | WHO Guideline / Limit | Long-Term Side Effect |
+                                        
+                                        Only include ingredients that have notable guidelines (like sugars, sodium, specific preservatives, unhealthy fats), health impacts, or side effects. Consolidate benign ingredients or skip them.
+                                        Ensure the output is ONLY the markdown table and no other conversational text.
+                                        """
+                                        response = model.generate_content(prompt)
+                                        # Display the generated table directly in Streamlit
+                                        st.markdown(response.text)
+                                    except Exception as e:
+                                        st.error(f"Failed to generate AI analysis: {str(e)}")
                         else:
                             st.warning("No specific ingredients list found for this product.")
                     else:
