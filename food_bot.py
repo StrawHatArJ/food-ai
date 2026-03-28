@@ -3,10 +3,12 @@ import requests
 import google.generativeai as genai
 import os
 import json
-from dotenv import load_dotenv
-
-# Load environment variables
-load_dotenv()
+# Try to load local .env variables if python-dotenv is installed (it gracefully ignores this in Streamlit Cloud)
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 st.set_page_config(page_title="AI Food Analyzer", page_icon="🍎", layout="wide")
 
