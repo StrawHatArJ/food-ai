@@ -123,11 +123,11 @@ def fetch_food_data(query):
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def analyze_ingredients_with_ai(ingredients_text, _api_key):
-    model_name = "gemini-2.5-flash"
+    model_name = "gemini-2.5-pro"
     try:
         available = [m.name for m in genai.list_models() if 'generateContent' in m.supported_generation_methods]
         if available:
-            flash_models = [m for m in available if "flash" in m]
+            flash_models = [m for m in available if "pro" in m]
             model_name = flash_models[0] if flash_models else available[0]
             model_name = model_name.replace("models/", "")
     except Exception:
