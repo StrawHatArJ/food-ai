@@ -84,8 +84,14 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Secure API Keys via Environment Variables
+# Secure API Keys via Environment Variables / Streamlit Secrets
 api_key = os.getenv("GEMINI_API_KEY")
+if not api_key:
+    try:
+        api_key = st.secrets["GEMINI_API_KEY"]
+    except Exception:
+        pass
+
 if api_key:
     genai.configure(api_key=api_key)
 
@@ -152,7 +158,7 @@ with col_sidebar:
     st.markdown('</div>', unsafe_allow_html=True)
     
     if not api_key:
-        st.error("⚠️ GEMINI_API_KEY is missing from environment variables! Please add it to your .env file.")
+        st.error("⚠️ GEMINI_API_KEY is missing! If deploying to Streamlit Cloud, add it via the 'Manage App' -> 'Settings' -> 'Secrets' dashboard.")
 
 with col_main:
     if analyze_btn:
@@ -177,7 +183,7 @@ with col_main:
                                 clean_ingredients = ingredients.replace(", ", " • ")
                                 
                                 if not api_key:
-                                    st.warning("Please configure your Gemini API Key in your .env file to enable AI analysis.")
+                                    st.warning("Gemini API key is required. Please set up the GEMINI_API_KEY secret in your Streamlit dashboard.")
                                 else:
                                     try:
                                         raw_json_output = analyze_ingredients_with_ai(clean_ingredients, api_key)
