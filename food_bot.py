@@ -99,20 +99,32 @@ if api_key:
 def fetch_food_data(query):
     headers = {"User-Agent": "AIFoodAnalyzer/1.0"}
     
-    # If the user typed a barcode, hit the exact product API
-    if query.isdigit() and len(query) >= 8:
-        url = f"https://world.openfoodfacts.org/api/v2/product/{query}.json"
-        response = requests.get(url, headers=headers, timeout=10)
-        if response.status_code == 200:
-            data = response.json()
-            if "product" in data:
-                return 200, {"products": [data["product"]]}
-        return response.status_code, {}
+    # Create a robust session with exponential backoff for proxy server errors
+    session = requests.Session()
+    from requests.adapters import HTTPAdapter
+    from urllib3.util.retry import Retry
+    # Retry up to 4 times for 503 and 429 overloads with increasing delay
+    retry = Retry(total=4, backoff_factor=1, status_forcelist=[429, 500, 502, 503, 504])
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('https://', adapter)
     
-    # Otherwise, hit the text search API
-    url = f"https://world.openfoodfacts.org/cgi/search.pl?search_terms={query}&search_simple=1&action=process&json=1"
-    response = requests.get(url, headers=headers, timeout=15)
-    return response.status_code, response.json() if response.status_code == 200 else {}
+    try:
+        # If the user typed a barcode, hit the exact product API
+        if query.isdigit() and len(query) >= 8:
+            url = f"https://world.openfoodfacts.org/api/v2/product/{query}.json"
+            response = session.get(url, headers=headers, timeout=20)
+            if response.status_code == 200:
+                data = response.json()
+                if "product" in data:
+                    return 200, {"products": [data["product"]]}
+            return response.status_code, {}
+        
+        # Otherwise, hit the text search API
+        url = f"https://world.openfoodfacts.org/cgi/search.pl?search_terms={query}&search_simple=1&action=process&json=1"
+        response = session.get(url, headers=headers, timeout=25)
+        return response.status_code, response.json() if response.status_code == 200 else {}
+    except requests.exceptions.RequestException:
+        return 503, {}
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def analyze_ingredients_with_ai(ingredients_text, _api_key):
