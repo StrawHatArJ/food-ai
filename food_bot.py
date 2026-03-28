@@ -10,7 +10,7 @@ try:
 except ImportError:
     pass
 
-st.set_page_config(page_title="AI Food Analyzer", page_icon="🍎", layout="wide")
+st.set_page_config(page_title="Food Pharma", page_icon="🍎", layout="wide")
 
 # Custom UI Styling (Dark Mode & Glassmorphism)
 st.markdown("""
