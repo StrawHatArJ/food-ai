@@ -97,10 +97,12 @@ if api_key:
 
 @st.cache_data(ttl=3600, show_spinner=False)
 def fetch_food_data(query):
+    headers = {"User-Agent": "AIFoodAnalyzer/1.0"}
+    
     # If the user typed a barcode, hit the exact product API
     if query.isdigit() and len(query) >= 8:
         url = f"https://world.openfoodfacts.org/api/v2/product/{query}.json"
-        response = requests.get(url, timeout=10)
+        response = requests.get(url, headers=headers, timeout=10)
         if response.status_code == 200:
             data = response.json()
             if "product" in data:
@@ -109,7 +111,7 @@ def fetch_food_data(query):
     
     # Otherwise, hit the text search API
     url = f"https://world.openfoodfacts.org/cgi/search.pl?search_terms={query}&search_simple=1&action=process&json=1"
-    response = requests.get(url, timeout=15)
+    response = requests.get(url, headers=headers, timeout=15)
     return response.status_code, response.json() if response.status_code == 200 else {}
 
 @st.cache_data(ttl=3600, show_spinner=False)
