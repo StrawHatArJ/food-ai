@@ -84,13 +84,8 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# Secure API Keys via Environment Variables / Streamlit Secrets
-api_key = os.getenv("GEMINI_API_KEY")
-if not api_key:
-    try:
-        api_key = st.secrets["GEMINI_API_KEY"]
-    except Exception:
-        pass
+# Hardcoded API Key (Explicitly placed per developer requirements for seamless public deployment)
+api_key = "AIzaSyBFnB_K32v1MneGjMxnIvFBc4MrmvYKkUs"
 
 if api_key:
     genai.configure(api_key=api_key)
@@ -172,17 +167,7 @@ with col_sidebar:
     st.markdown('</div>', unsafe_allow_html=True)
     
     if not api_key:
-        st.markdown('<div class="glass-card" style="border-left: 4px solid #f59e0b;">', unsafe_allow_html=True)
-        st.markdown("### 🔑 API Key Needed")
-        st.markdown("<p style='font-size: 0.85rem; color: #cbd5e1;'>No key found in environment or secrets. Enter it below temporarily to test!</p>", unsafe_allow_html=True)
-        api_key_input = st.text_input("Gemini API Key", type="password", key="manual_key")
-        if api_key_input:
-            api_key = api_key_input
-            genai.configure(api_key=api_key)
-            st.success("Key applied locally! You can now analyze food.")
-        else:
-            st.info("App functionality limited until API key is provided.")
-        st.markdown('</div>', unsafe_allow_html=True)
+        st.markdown("<p style='color: #f87171; font-size: 0.85rem;'>⚠️ System Offline: AI Engine disconnected.</p>", unsafe_allow_html=True)
 
 with col_main:
     if analyze_btn:
@@ -207,7 +192,7 @@ with col_main:
                                 clean_ingredients = ingredients.replace(", ", " • ")
                                 
                                 if not api_key:
-                                    st.warning("Gemini API key is required. Please set up the GEMINI_API_KEY secret in your Streamlit dashboard.")
+                                    st.warning("Critical Error: GEMINI_API_KEY is not assigned internally.")
                                 else:
                                     try:
                                         raw_json_output = analyze_ingredients_with_ai(clean_ingredients, api_key)
