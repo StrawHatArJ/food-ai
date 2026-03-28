@@ -158,7 +158,17 @@ with col_sidebar:
     st.markdown('</div>', unsafe_allow_html=True)
     
     if not api_key:
-        st.error("⚠️ GEMINI_API_KEY is missing! If deploying to Streamlit Cloud, add it via the 'Manage App' -> 'Settings' -> 'Secrets' dashboard.")
+        st.markdown('<div class="glass-card" style="border-left: 4px solid #f59e0b;">', unsafe_allow_html=True)
+        st.markdown("### 🔑 API Key Needed")
+        st.markdown("<p style='font-size: 0.85rem; color: #cbd5e1;'>No key found in environment or secrets. Enter it below temporarily to test!</p>", unsafe_allow_html=True)
+        api_key_input = st.text_input("Gemini API Key", type="password", key="manual_key")
+        if api_key_input:
+            api_key = api_key_input
+            genai.configure(api_key=api_key)
+            st.success("Key applied locally! You can now analyze food.")
+        else:
+            st.info("App functionality limited until API key is provided.")
+        st.markdown('</div>', unsafe_allow_html=True)
 
 with col_main:
     if analyze_btn:
