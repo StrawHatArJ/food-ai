@@ -85,7 +85,7 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 # Hardcoded API Key (Explicitly placed per developer requirements for seamless public deployment)
-api_key = ""
+api_key = "AIzaSyCcUHBuLV0eQDsIVROH6X5_Khb8m88dWfE"
 
 if api_key:
     genai.configure(api_key=api_key)
